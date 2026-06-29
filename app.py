@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import mysql.connector
 import plotly.express as px
 import os
 from dotenv import load_dotenv
@@ -92,43 +91,20 @@ elif data_source == "Upload Excel":
 
 
 # ---------------- DATABASE ---------------- #
+uploaded_file = st.sidebar.file_uploader(
+    "Upload CSV or Excel",
+    type=["csv", "xlsx", "xls"]
+)
 
-@st.cache_resource
-def get_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Sarita@98388",
-        database="ai_sales"
-    )
+if uploaded_file is None:
+    st.info("👈 Please upload a CSV or Excel file to begin.")
+    st.stop()
 
-conn = get_connection()
+if uploaded_file.name.endswith(".csv"):
+    df = pd.read_csv(uploaded_file)
+else:
+    df = pd.read_excel(uploaded_file)
 
-if not conn.is_connected():
-    conn.reconnect()
-
-query = """
-SELECT
-row_id,
-order_id,
-order_date,
-ship_date,
-ship_mode,
-customer_name,
-segment,
-country_region,
-city,
-state_province,
-region,
-category,
-sub_category,
-product_name,
-sales,
-quantity,
-discount,
-profit
-FROM superstore
-"""
 # ---------- LOAD DATA ----------
 
 if data_source == "MySQL Database":
@@ -801,4 +777,3 @@ Question:
         file_name="AI_Sales_Report.txt",
         mime="text/plain"
     )
-conn.close()
